@@ -1,8 +1,8 @@
+from typing import Type, TypeVar, Optional, Union, Dict, List, Any
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar, List, Optional, Union, Any
-from db import Base
-from models import BaseModel
 from sqlalchemy.orm import Session
+from models import BaseModel
+from db import Base
 
 ModelType = TypeVar('ModelType', bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -19,11 +19,11 @@ class ABSRepo(ABC):
         pass
 
     @abstractmethod
-    def create_with_flush(self, db: Session, data_in: CreateSchemaType):
+    def create_with_flush(self, db: Session, data_in: CreateSchemaType) -> ModelType:
         pass
 
     @abstractmethod
-    def create_commit_after_flush(self, db: Session, data_obj: ModelType):
+    def create_commit_with_refresh(self, db: Session, data_obj: ModelType) -> ModelType:
         pass
 
     @abstractmethod
@@ -35,23 +35,19 @@ class ABSRepo(ABC):
         pass
 
     @abstractmethod
-    def get_with_pagination(self, db: Session, skip: int, limit: int, descending: bool = False):
+    def get_by_key_first(self, db: Session, **kwargs) -> Optional[ModelType]:
         pass
 
     @abstractmethod
-    def get_by_key_first(self, db: Session, **kwargs):
+    def get_by_key(self, db: Session, count: bool, descending: bool, pagination: bool, page: int, skip: int, limit: int, **kwargs) -> Union[List[ModelType], Dict[str, Any]]:
         pass
 
     @abstractmethod
-    def get_by_key(self, db: Session, skip: int, limit: int, descending: bool, count_results: bool, **kwargs):
+    def update(self, db: Session, id: int, data_update: UpdateSchemaType) -> ModelType:
         pass
 
     @abstractmethod
-    def get_by_two_key(self, db: Session, skip: int, limit: int, descending: bool, count_results: bool, **kwargs):
-        pass
-
-    @abstractmethod
-    def update(self, db: Session, id: int,  data_update: UpdateSchemaType) -> ModelType:
+    def update_by_user_id(self, db: Session, user_id: int, data_update: UpdateSchemaType) -> ModelType:
         pass
 
     @abstractmethod

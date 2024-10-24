@@ -1,14 +1,11 @@
-from pydantic import BaseModel
-from typing import Optional
-from pydantic.types import constr
+from pydantic import BaseModel, constr
 from datetime import datetime
+from typing import Optional
 
 
 class UserBase(BaseModel):
     name: str
-    phone: constr(
-        min_length=11, max_length=14, regex=r"(^(\+88)?(01){1}[3-9]{1}\d{8})$"
-    )
+    phone: str
     email: Optional[str] = None
 
 
@@ -17,12 +14,11 @@ class UserIn(UserBase):
 
 
 class UserOut(UserBase):
-    created_at: Optional[datetime] = None
-    log_info: Optional[datetime] = None
     id: int
+    created_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserUpdate(BaseModel):
@@ -31,26 +27,9 @@ class UserUpdate(BaseModel):
     email: Optional[str] = None
 
 
-class UserPasswordUpdate(BaseModel):
-    password: str
-
-
 class UserAuthOut(UserBase):
-    created_at: Optional[datetime] = None
-    log_info: Optional[datetime] = None
     id: int
+    created_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
-
-
-class UserLogin(BaseModel):
-    identifier: str
-    password: str
-
-
-class ResultIn(BaseModel):
-    results: int
-
-    class Config:
-        orm_mode = True
+        from_attributes = True

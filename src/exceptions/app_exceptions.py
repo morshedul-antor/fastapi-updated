@@ -1,13 +1,13 @@
-from typing import Any, Dict, Union
-from fastapi import Request, status
 from fastapi.responses import JSONResponse
+from typing import Union, Any, Dict
+from fastapi import Request, status
 
 
 def generic_exception_handler(request: Request, exception: Exception):
     print(exception)
     return JSONResponse(
         status_code=500,
-        content={"context": "Something went wrong", "error": repr(exception)},
+        content={"context": "Something went wrong!", "error": repr(exception)},
     )
 
 
@@ -62,6 +62,6 @@ class AppException(object):
 
     class CredentialsException(AppExceptionCase):
         def __init__(
-            self, context: dict = {"message": "Could not validate credentials"}
+            self, context: dict = {"message": "Could not validate credentials!"}
         ):
             super().__init__(status.HTTP_400_BAD_REQUEST, context)

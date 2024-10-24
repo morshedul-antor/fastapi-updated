@@ -1,9 +1,10 @@
-from typing import Any, Generic, Optional, Type, TypeVar, List, Union
-from sqlalchemy import desc
+from typing import Generic, Optional, Type, TypeVar, Union, Dict, List, Any
 from sqlalchemy.orm import Session
-from db import Base
+from .base_abstract import ABSRepo
 from models import BaseModel
-from repositories.base_abstract import ABSRepo
+from sqlalchemy import desc
+from utils import Count
+from db import Base
 
 ModelType = TypeVar('ModelType', bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -15,8 +16,7 @@ class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABSRepo):
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
-    """"Data create related methods"""
-
+    # ********** data create related methods ********** #
     def create(self, db: Session, data_in: CreateSchemaType) -> ModelType:
         data = self.model(**data_in.dict())
         db.add(data)
@@ -24,94 +24,76 @@ class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABSRepo):
         db.refresh(data)
         return data
 
-    def create_with_flush(self, db: Session, data_in: CreateSchemaType):
+    def create_with_flush(self, db: Session, data_in: CreateSchemaType) -> ModelType:
         data = self.model(**data_in.dict())
         db.add(data)
         db.flush()
         return data
 
-    def create_commit_after_flush(self, db: Session, data_obj: ModelType):
+    def create_commit_with_refresh(self, db: Session, data_obj: ModelType) -> ModelType:
         db.commit()
         db.refresh(data_obj)
         return data_obj
 
-    """Data get related methods"""
-
+    # ********** data get related methods ********** #
     def get(self, db: Session) -> List[ModelType]:
-        query = db.query(self.model).all()
-        return query
+        return db.query(self.model).all()
 
     def get_one(self, db: Session, id: int) -> ModelType:
         return db.query(self.model).filter(self.model.id == id).first()
 
-    def get_with_pagination(self, db: Session, skip: int, limit: int, descending: bool = False, count_results: bool = False):
+    def filter_by_kwargs(self, db: Session, **kwargs) -> Any:
+        query = db.query(self.model)
 
-        query = db.query(self.model).all()
+        for key, value in kwargs.items():
+            if 'like' in key:
+                query = query.filter(
+                    getattr(self.model, key.split('_like')[0]).like(f"%{value}%"))
+            else:
+                query = query.filter(getattr(self.model, key) == value)
 
-        if descending == True:
-            data = db.query(self.model).order_by(
-                desc(self.model.created_at)).offset(skip).limit(limit).all()
-        else:
-            data = db.query(self.model).offset(skip).limit(limit).all()
-
-        if count_results == True:
-            return [{"results": len(query)}, data]
-        return data
-        
-
-    def get_by_key_first(self, db: Session, **kwargs):
-        search_key = list(kwargs.items())[0][0]
-        search_value = list(kwargs.items())[0][1]
-
-        query = db.query(self.model).filter(getattr(self.model, search_key) == search_value).first()
         return query
 
-    def get_by_key(self, db: Session, skip: int, limit: int, descending: bool = False, count_results: bool = False, **kwargs):
-        search_key = list(kwargs.items())[0][0]
-        search_value = list(kwargs.items())[0][1]
+    def get_by_key_first(self, db: Session, **kwargs) -> Optional[ModelType]:
+        return self.filter_by_kwargs(db, **kwargs).first()
 
-        query = db.query(self.model).filter(
-            getattr(self.model, search_key) == search_value).all()
+    def get_by_key(self, db: Session, count: bool = False, descending: bool = False, pagination: bool = False, page: int = None, skip: int = None, limit: int = 10, **kwargs) -> Union[List[ModelType], Dict[str, Any]]:
+        query = self.filter_by_kwargs(db, **kwargs)
 
-        if descending == True:
-            data = db.query(self.model).filter(getattr(self.model, search_key) == search_value).order_by(
-                desc(self.model.created_at)).offset(skip).limit(limit).all()
-        else:
-            data = db.query(self.model).filter(
-                getattr(self.model, search_key) == search_value).offset(skip).limit(limit).all()
+        data_count = query.count() if count or pagination else None
 
-        if count_results == True:
-            return [{"results": len(query)}, data]
+        if descending:
+            query = query.order_by(desc(self.model.created_at))
+
+        if pagination:
+            pagination_count = Count.pagination_count(
+                page=page or 1, skip=skip or 0, limit=limit, count=data_count
+            )
+            query = query.offset(pagination_count.skip).limit(limit)
+
+        data = query.all()
+
+        if count and pagination:
+            return [pagination_count, data]
+        elif count:
+            return [{"counts": data_count}, data]
+
         return data
 
-    def get_by_two_key(self, db: Session, skip: int, limit: int, descending: bool = False, count_results: bool = False, **kwargs):
-        search_key = list(kwargs.items())[0][0]
-        search_value = list(kwargs.items())[0][1]
-
-        second_search_key = list(kwargs.items())[1][0]
-        second_search_value = list(kwargs.items())[1][1]
-
-        query = db.query(self.model).filter(getattr(self.model, search_key) == search_value).filter(getattr(self.model, second_search_key) == second_search_value).all()
-
-        if descending == True:
-            data = db.query(
-                self.model).filter(
-                getattr(self.model, search_key) == search_value).filter(
-                getattr(self.model, second_search_key) == second_search_value).order_by(
-                desc(self.model.created_at)).offset(skip).limit(limit).all()
-        else:
-            data = db.query(self.model).filter(getattr(self.model, search_key) == search_value).filter(getattr(self.model, second_search_key) == second_search_value).offset(skip).limit(limit).all()
-
-        if count_results == True:
-            return [{"results": len(query)}, data]
-        return data
-
+    # ********** data update related methods ********** #
     def update(self, db: Session, id: int,  data_update: UpdateSchemaType) -> ModelType:
         db.query(self.model).filter(self.model.id == id).update(
             data_update.dict(exclude_unset=True), synchronize_session=False)
         db.commit()
         return self.get_one(db, id)
 
+    def update_by_user_id(self, db: Session, user_id: int,  data_update: UpdateSchemaType) -> ModelType:
+        db.query(self.model).filter(self.model.user_id == user_id).update(
+            data_update.dict(exclude_unset=True), synchronize_session=False)
+        db.commit()
+        return self.get_by_key_first(db, user_id)
+
+    # ********** data delete method ********** #
     def delete(self, db: Session, id: int) -> Optional[Union[ModelType, Any]]:
         result = db.query(self.model).filter(self.model.id ==
                                              id).delete(synchronize_session=False)

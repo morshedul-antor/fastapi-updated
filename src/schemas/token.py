@@ -1,19 +1,17 @@
-from typing import Optional
 from pydantic import BaseModel
-from datetime import datetime
 
 
-class Token(BaseModel):
+class TokenDataIn(BaseModel):
+    user_id: int
+
+
+class TokenOut(BaseModel):
     access_token: str
     token_type: str
 
 
-class TokenData(BaseModel):
-    user_id: int
-
-
-class Msg(BaseModel):
-    msg: str
+class MessageOut(BaseModel):
+    message: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

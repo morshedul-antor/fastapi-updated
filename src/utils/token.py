@@ -1,15 +1,9 @@
-from datetime import datetime, timedelta
-from typing import Optional
-from db import settings
 from jose import jwt, JWTError, ExpiredSignatureError
+from datetime import datetime, timedelta
+from schemas import TokenDataIn
+from typing import Optional
 from exceptions import *
-from schemas import TokenData
-
-
-# import logging
-
-# logging.basicConfig(level=logging.DEBUG)
-# logger = logging.getLogger(__name__)
+from db import settings
 
 
 class Token:
@@ -23,23 +17,29 @@ class Token:
 
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
-            to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+            to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        )
         return encoded_jwt
 
     @staticmethod
-    def validate_token(token: str) -> TokenData:
+    def validate_token(token: str) -> TokenDataIn:
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY,
-                                 algorithms=[settings.ALGORITHM], options={"verify_sub": False})
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=[settings.ALGORITHM],
+                options={"verify_sub": False}
+            )
             user_id = payload.get("sub")
 
             if user_id is None:
                 raise AppException.CredentialsException()
-            token_data = TokenData(user_id=user_id)
+
+            token_data = TokenDataIn(user_id=user_id)
             return token_data
 
         except ExpiredSignatureError:
-            raise AppException.BadRequest({"message": "Token expired"})
+            raise AppException.BadRequest({"message": "Token has expired!"})
         except JWTError as err:
             print(err)
             raise AppException.CredentialsException()

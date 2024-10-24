@@ -1,11 +1,10 @@
+from exceptions import AppException, ServiceResult
 from typing import Generic, Type, TypeVar
 from sqlalchemy.orm import Session
+from repositories import BaseRepo
+from pydantic import BaseModel
 from fastapi import status
 from db import Base
-from pydantic import BaseModel
-from repositories import BaseRepo
-from exceptions import AppException, ServiceResult
-
 
 ModelType = TypeVar('ModelType', bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -19,78 +18,81 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
         self.repo = repo
 
+    # ********** data create related methods ********** #
     def create(self, db: Session, data_in: CreateSchemaType):
         data = self.repo.create(db, data_in)
         if not data:
             return ServiceResult(AppException.ServerError("Something went wrong!"))
+
         return ServiceResult(data, status_code=status.HTTP_201_CREATED)
 
     def create_with_flush(self, db: Session, data_in: CreateSchemaType):
         data = self.repo.create_with_flush(db, data_in)
         if not data:
             return ServiceResult(AppException.ServerError("Something went wrong!"))
+
         return ServiceResult(data, status_code=status.HTTP_201_CREATED)
 
+    # ********** data get related methods ********** #
     def get(self, db: Session):
         data = self.repo.get(db)
         if not data:
-            data = []
-            # return ServiceResult(AppException.NotFound(f"No {self.model.__name__.lower}s found."))
+            return ServiceResult([], status_code=status.HTTP_200_OK)
+
         return ServiceResult(data, status_code=status.HTTP_200_OK)
 
     def get_one(self, db: Session, id: int):
         data = self.repo.get_one(db, id)
         if not data:
             return ServiceResult(AppException.NotFound(f"No {self.model.__name__.lower}s found."))
-        return ServiceResult(data, status_code=status.HTTP_200_OK)
 
-    def get_with_pagination(self, db: Session, skip: int, limit: int, descending: bool = False, count_results: bool = False):
-        data = self.repo.get_with_pagination(
-            db=db, skip=skip, limit=limit, descending=descending, count_results=count_results)
-
-        if not data:
-            if count_results is True:
-                data = [{"results": 0}, []]
-            else:
-                data = []
         return ServiceResult(data, status_code=status.HTTP_200_OK)
 
     def get_by_key_first(self, db: Session, **kwargs):
         data = self.repo.get_by_key_first(db=db, **kwargs)
         if not data:
-            return ServiceResult(AppException.ServerError("Data not found!"))
+            return ServiceResult(AppException.NotFound("Data not found!"))
+
         return ServiceResult(data, status_code=status.HTTP_200_OK)
 
-    def get_by_key(self, db: Session, skip: int, limit: int, descending: bool, count_results: bool, **kwargs):
+    def get_by_key(self, db: Session, count: bool = False, descending: bool = False, pagination: bool = False, page: int = None, skip: int = None, limit: int = 10, **kwargs):
         data = self.repo.get_by_key(
-            db=db, skip=skip, limit=limit, descending=descending, count_results=count_results, **kwargs)
+            db=db, count=count, descending=descending, pagination=pagination, page=page, skip=skip, limit=limit, **kwargs
+        )
 
         if not data:
-            data = []
+            return ServiceResult([], status_code=status.HTTP_200_OK)
+
         return ServiceResult(data, status_code=status.HTTP_200_OK)
 
-    def get_by_two_key(self, db: Session, skip: int, limit: int, descending: bool, count_results: bool, **kwargs):
-        data = self.repo.get_by_two_key(
-            db=db, skip=skip, limit=limit, descending=descending, count_results=count_results, **kwargs)
-
-        if not data:
-            data = []
-        return ServiceResult(data, status_code=status.HTTP_200_OK)
-
+    # ********** data update related methods ********** #
     def update(self, db: Session, id: int, data_update: UpdateSchemaType):
         data = self.repo.update(db, id, data_update)
         if not data:
             return ServiceResult(AppException.NotAccepted())
+
         return ServiceResult(data, status_code=status.HTTP_202_ACCEPTED)
 
-    def update_before_check(self, db: Session, id: int, data_update: UpdateSchemaType, **kwargs):
-        get_data = self.repo.get_by_two_key(db=db, skip=0, limit=10, descending=False, count_results=False, id=id, **kwargs)
-        if not get_data:
-            return ServiceResult(AppException.ServerError("Access denied"))
+    def update_by_user_id(self, db: Session, user_id: int, data_update: UpdateSchemaType):
+        data = self.repo.update_by_user_id(db, user_id, data_update)
+        if not data:
+            return ServiceResult(AppException.NotAccepted())
+
+        return ServiceResult(data, status_code=status.HTTP_202_ACCEPTED)
+
+    def update_after_check(self, db: Session, id: int, data_update: UpdateSchemaType, **kwargs):
+        data = self.repo.get_by_key(
+            db=db, count=False, descending=False, pagination=True, skip=0, limit=1, id=id, **kwargs)
+
+        if not data:
+            return ServiceResult(AppException.NotFound("No data found!"))
+
         return self.update(db=db, id=id, data_update=data_update)
 
+    # ********** data delete method ********** #
     def delete(self, db: Session, id: int):
         remove = self.repo.delete(db, id)
-        if remove:
-            return ServiceResult("Deleted", status_code=status.HTTP_202_ACCEPTED)
-        return ServiceResult(AppException.Forbidden())
+        if not remove:
+            return ServiceResult(AppException.Forbidden())
+
+        return ServiceResult(f"{id} successfully deleted", status_code=status.HTTP_202_ACCEPTED)
