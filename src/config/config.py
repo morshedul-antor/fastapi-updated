@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.environ.get("DATABASE_URL")
     SECRET_KEY: str = os.environ.get("SECRET_KEY")
     ALGORITHM: str = os.environ.get("ALGORITHM")
+    REDIS_URL: str = os.environ.get("REDIS_URL")
     ENV: str = os.environ.get("ENV")
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
