@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-from db import settings
+from config import settings
 
 import routers.v1.routes
 import uvicorn

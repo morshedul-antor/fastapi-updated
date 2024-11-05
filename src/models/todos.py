@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Text, Integer, ForeignKey
 from .base import BaseModel
-from db import Base
+from core import Base
 
 
 class ToDo(Base, BaseModel):

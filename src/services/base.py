@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from repositories import BaseRepo
 from pydantic import BaseModel
 from fastapi import status
-from db import Base
+from core import Base
 
 ModelType = TypeVar('ModelType', bound=Base)  # type: ignore
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)

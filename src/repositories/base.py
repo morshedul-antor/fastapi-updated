@@ -4,9 +4,9 @@ from .base_abstract import ABSRepo
 from models import BaseModel
 from sqlalchemy import desc
 from utils import Count
-from db import Base
+from core import Base
 
-ModelType = TypeVar('ModelType', bound=Base)
+ModelType = TypeVar('ModelType', bound=Base)  # type: ignore
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 

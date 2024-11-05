@@ -4,12 +4,13 @@ from sqlalchemy.orm import Session
 from services import user_service
 from fastapi import Depends
 from utils import Token
-from db import get_db
+from core import get_db
 
 security = HTTPBearer()
 
 
 class Auth:
+
     @staticmethod
     def logged_in(credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
         token = credentials.credentials

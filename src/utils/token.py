@@ -2,8 +2,8 @@ from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta
 from schemas import TokenDataIn
 from typing import Optional
+from config import settings
 from exceptions import *
-from db import settings
 
 
 class Token:
