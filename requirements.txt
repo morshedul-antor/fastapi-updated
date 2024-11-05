@@ -4,12 +4,16 @@
 #
 #    pip-compile requirements.in
 #
+aioredis==2.0.1
+    # via -r requirements.in
 alembic==1.13.3
     # via -r requirements.in
 annotated-types==0.7.0
     # via pydantic
 anyio==4.5.0
     # via starlette
+async-timeout==5.0.0
+    # via aioredis
 bcrypt==4.2.0
     # via -r requirements.in
 certifi==2024.8.30
@@ -80,6 +84,7 @@ starlette==0.38.6
     # via fastapi
 typing-extensions==4.12.2
     # via
+    #   aioredis
     #   alembic
     #   annotated-types
     #   anyio
