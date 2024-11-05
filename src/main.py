@@ -12,17 +12,17 @@ import uvicorn
 
 
 if settings.ENV == "prod":
+    cors_origin = ["*"]
     docs_url = None
     redoc_url = None
-    cors_origin = ["*"]
 elif settings.ENV == "dev":
+    cors_origin = ["*"]
     docs_url = "/docs"
     redoc_url = None
-    cors_origin = ["*"]
 else:
+    cors_origin = ["*"]
     docs_url = "/docs"
     redoc_url = "/redocs"
-    cors_origin = ["*"]
 
 
 app = FastAPI(
