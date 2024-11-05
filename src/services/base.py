@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from fastapi import status
 from db import Base
 
-ModelType = TypeVar('ModelType', bound=Base)
+ModelType = TypeVar('ModelType', bound=Base)  # type: ignore
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 ModelRepo = TypeVar("ModelRepo", bound=BaseRepo)

@@ -2,6 +2,7 @@ from schemas import CountWithPaginationIn
 
 
 class Count:
+
     @staticmethod
     def pagination_count(page: int = None, skip: int = None, limit: int = None, count: int = None):
         if page is not None:

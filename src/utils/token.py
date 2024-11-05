@@ -7,6 +7,7 @@ from db import settings
 
 
 class Token:
+
     @staticmethod
     def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
         to_encode = data.copy()
