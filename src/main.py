@@ -10,18 +10,33 @@ from db import settings
 import routers.v1.routes
 import uvicorn
 
+
+if settings.ENV == "prod":
+    docs_url = None
+    redoc_url = None
+    cors_origin = ["*"]
+elif settings.ENV == "dev":
+    docs_url = "/docs"
+    redoc_url = None
+    cors_origin = ["*"]
+else:
+    docs_url = "/docs"
+    redoc_url = "/redocs"
+    cors_origin = ["*"]
+
+
 app = FastAPI(
     title='FastAPI',
     version="0.1.0",
     openapi_url="/fastapi.json",
-    # docs_url = None,
-    # redoc_url = None,
+    docs_url=docs_url,
+    redoc_url=redoc_url
 )
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origin,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
