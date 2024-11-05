@@ -7,6 +7,7 @@ SECRET_KEY=
 ALGORITHM=HS256
 ENV=local
 DATABASE_URL=mysql+mysqlconnector://root:@localhost:3306/db_fastapi
+REDIS_URL=redis://localhost:6379/0
 URL_ONE=http://localhost:3000
 URL_TWO=https://localhost:3000
 
@@ -19,6 +20,7 @@ SECRET_KEY=
 ALGORITHM=HS256
 ENV=local
 DATABASE_URL=mysql+mysqlconnector://root:@localhost:3306/db_fastapi
+REDIS_URL=redis://localhost:6379/0
 URL_ONE=http://localhost:3000
 URL_TWO=https://localhost:3000
 
