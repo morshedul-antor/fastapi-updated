@@ -3,6 +3,7 @@ from typing import Generic, Type, TypeVar
 from sqlalchemy.orm import Session
 from repositories import BaseRepo
 from pydantic import BaseModel
+from datetime import datetime
 from fastapi import status
 from core import Base
 
@@ -55,9 +56,10 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         return ServiceResult(data, status_code=status.HTTP_200_OK)
 
-    def get_by_key(self, db: Session, count: bool = False, descending: bool = False, pagination: bool = False, page: int = None, skip: int = None, limit: int = 10, **kwargs):
+    def get_by_key(self, db: Session, count: bool = False, descending: bool = False, pagination: bool = False, page: int = None, skip: int = None, limit: int = 10, start_date: datetime = None,
+                   end_date: datetime = None, **kwargs):
         data = self.repo.get_by_key(
-            db=db, count=count, descending=descending, pagination=pagination, page=page, skip=skip, limit=limit, **kwargs
+            db=db, count=count, descending=descending, pagination=pagination, page=page, skip=skip, limit=limit, start_date=start_date, end_date=end_date, **kwargs
         )
 
         if not data:
