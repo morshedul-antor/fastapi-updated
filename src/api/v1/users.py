@@ -10,10 +10,10 @@ from core import get_db
 router = APIRouter()
 
 
-@router.get('/', response_model=List[Union[CountWithPaginationOut, List[UserOut]]])
-def all_user(db: Session = Depends(get_db)):
+@router.get('/', response_model=List[Union[CountOut, List[UserOut]]])
+def all_user(start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
     data = user_service.get_by_key(
-        db=db, count=True, descending=True, pagination=True)
+        db=db, count=True, descending=True, start_date=start_date, end_date=end_date)
     return handle_result(data)
 
 
