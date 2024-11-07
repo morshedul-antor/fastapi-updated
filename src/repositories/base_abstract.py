@@ -1,6 +1,7 @@
 from typing import Type, TypeVar, Optional, Union, Dict, List, Any
 from abc import ABC, abstractmethod
 from sqlalchemy.orm import Session
+from datetime import datetime
 from models import BaseModel
 from core import Base
 
@@ -39,7 +40,7 @@ class ABSRepo(ABC):
         pass
 
     @abstractmethod
-    def get_by_key(self, db: Session, count: bool, descending: bool, pagination: bool, page: int, skip: int, limit: int, **kwargs) -> Union[List[ModelType], Dict[str, Any]]:
+    def get_by_key(self, db: Session, count: bool, descending: bool, pagination: bool, page: int, skip: int, limit: int, start_date: datetime, end_date: datetime, **kwargs) -> Union[List[ModelType], Dict[str, Any]]:
         pass
 
     @abstractmethod

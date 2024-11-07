@@ -1,6 +1,7 @@
 from typing import Generic, Optional, Type, TypeVar, Union, Dict, List, Any
 from sqlalchemy.orm import Session
 from .base_abstract import ABSRepo
+from datetime import datetime
 from models import BaseModel
 from sqlalchemy import desc
 from utils import Count
@@ -57,8 +58,13 @@ class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABSRepo):
     def get_by_key_first(self, db: Session, **kwargs) -> Optional[ModelType]:
         return self.filter_by_kwargs(db, **kwargs).first()
 
-    def get_by_key(self, db: Session, count: bool = False, descending: bool = False, pagination: bool = False, page: int = None, skip: int = None, limit: int = 10, **kwargs) -> Union[List[ModelType], Dict[str, Any]]:
+    def get_by_key(self, db: Session, count: bool = False, descending: bool = False, pagination: bool = False, page: int = None, skip: int = None, limit: int = 10, start_date: datetime = None,
+                   end_date: datetime = None, **kwargs) -> Union[List[ModelType], Dict[str, Any]]:
         query = self.filter_by_kwargs(db, **kwargs)
+
+        if start_date and end_date:
+            query = query.filter(
+                self.model.created_at.between(start_date, end_date))
 
         data_count = query.count() if count or pagination else None
 
