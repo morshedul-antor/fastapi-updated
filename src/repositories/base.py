@@ -64,7 +64,8 @@ class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABSRepo):
 
         if start_date and end_date:
             query = query.filter(
-                self.model.created_at.between(start_date, end_date))
+                self.model.created_at.between(start_date, end_date)
+            )
 
         data_count = query.count() if count or pagination else None
 
