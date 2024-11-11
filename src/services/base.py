@@ -83,8 +83,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return ServiceResult(data, status_code=status.HTTP_202_ACCEPTED)
 
     def update_after_check(self, db: Session, id: int, data_update: UpdateSchemaType, **kwargs):
-        data = self.repo.get_by_key(
-            db=db, count=False, descending=False, pagination=True, skip=0, limit=1, id=id, **kwargs)
+        data = self.repo.get_by_key_first(db=db, id=id, **kwargs)
 
         if not data:
             return ServiceResult(AppException.NotFound("No data found!"))
