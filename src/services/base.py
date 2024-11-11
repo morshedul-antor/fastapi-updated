@@ -5,7 +5,7 @@ from repositories import BaseRepo
 from pydantic import BaseModel
 from datetime import datetime
 from fastapi import status
-from core import Base
+from models import Base
 
 ModelType = TypeVar('ModelType', bound=Base)  # type: ignore
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)

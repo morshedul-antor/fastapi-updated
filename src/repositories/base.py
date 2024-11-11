@@ -5,7 +5,7 @@ from datetime import datetime
 from models import BaseModel
 from sqlalchemy import desc
 from utils import Count
-from core import Base
+from models import Base
 
 ModelType = TypeVar('ModelType', bound=Base)  # type: ignore
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)

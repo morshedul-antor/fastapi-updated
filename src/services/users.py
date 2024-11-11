@@ -28,6 +28,7 @@ class UserService(BaseService[User, UserIn, UserUpdate]):
 
         if not data:
             return ServiceResult(AppException.ServerError("Something went wrong!"))
+
         return ServiceResult(data, status_code=status.HTTP_201_CREATED)
 
 

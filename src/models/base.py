@@ -1,6 +1,9 @@
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, Column, DateTime
 from sqlalchemy.sql import func
+
+Base = declarative_base()
 
 
 @as_declarative()

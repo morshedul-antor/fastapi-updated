@@ -33,8 +33,8 @@ class LoginService(BaseService[User, UserIn, UserUpdate]):
                 # expires_delta = timedelta(days=5)
             )
             return ServiceResult({"access_token": access_token, "token_type": "bearer"}, status_code=status.HTTP_200_OK)
-        else:
-            return ServiceResult(AppException.NotFound("Invalid username or password!"))
+
+        return ServiceResult(AppException.NotFound("Invalid username or password!"))
 
 
 login_service = LoginService(User, user_repo)
