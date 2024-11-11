@@ -47,7 +47,9 @@ class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABSRepo):
         query = db.query(self.model)
 
         for key, value in kwargs.items():
-            if 'like' in key:
+            value = value or ""
+
+            if '_like' in key:
                 query = query.filter(
                     getattr(self.model, key.split('_like')[0]).like(f"%{value}%"))
             else:
@@ -102,7 +104,10 @@ class BaseRepo(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABSRepo):
 
     # ********** data delete method ********** #
     def delete(self, db: Session, id: int) -> Optional[Union[ModelType, Any]]:
-        result = db.query(self.model).filter(self.model.id ==
-                                             id).delete(synchronize_session=False)
+        result = (
+            db.query(self.model)
+            .filter(self.model.id == id)
+            .delete(synchronize_session=False)
+        )
         db.commit()
         return result
