@@ -6,16 +6,18 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from config import settings
+from core import get_env
 
 import routers.v1.routes
 import uvicorn
 
+env = get_env()
 
-if settings.ENV == "prod":
+if env == "prod":
     cors_origin = ["*"]
     docs_url = None
     redoc_url = None
-elif settings.ENV == "dev":
+elif env == "dev":
     cors_origin = ["*"]
     docs_url = "/docs"
     redoc_url = None
