@@ -1,10 +1,10 @@
 from typing import AsyncIterator
+from redis.asyncio import Redis
 from config import settings
-import aioredis
 
 
-async def get_redis_pool() -> AsyncIterator[aioredis.Redis]:
-    redis = aioredis.from_url(
+async def get_redis_pool() -> AsyncIterator[Redis]:
+    redis = redis.from_url(
         settings.REDIS_URL,
         decode_responses=True
     )
