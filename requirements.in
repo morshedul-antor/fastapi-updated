@@ -10,4 +10,5 @@ passlib==1.7.4
 python-multipart==0.0.12
 bcrypt==4.2.0
 requests==2.32.3
-aioredis==2.0.1
+redis==6.2.0
+apscheduler==3.11.0
