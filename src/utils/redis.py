@@ -3,7 +3,7 @@ from typing import Any
 import json
 
 
-class Redis:
+class RedisCache:
 
     @staticmethod
     async def set_redis_cache(redis: Redis, key: str, value: Any, expire: int):
