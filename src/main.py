@@ -1,23 +1,23 @@
 from exceptions import AppExceptionCase, AppException, app_exception_handler, generic_exception_handler
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+from tasks import schedule_jobs
 from config import settings
-from core import get_env
 
 import routers.v1.routes
 import uvicorn
+import atexit
 
-env = get_env()
-
-if env == "prod":
+if settings.ENV == "prod":
     cors_origin = ["*"]
     docs_url = None
     redoc_url = None
-elif env == "dev":
+elif settings.ENV == "dev":
     cors_origin = ["*"]
     docs_url = "/docs"
     redoc_url = None
@@ -34,6 +34,12 @@ app = FastAPI(
     docs_url=docs_url,
     redoc_url=redoc_url
 )
+
+# schedule jobs
+scheduler = BackgroundScheduler()
+schedule_jobs(scheduler)
+scheduler.start()
+atexit.register(lambda: scheduler.shutdown(wait=False))
 
 
 app.add_middleware(
@@ -58,11 +64,7 @@ def request_validation_exception_handler(request: Request, exc: RequestValidatio
         content=jsonable_encoder(
             {
                 "detail": exc.errors(),
-                "body": exc.body,
-                "your_additional_errors": {
-                    "Will be": "Inside",
-                    "This": " Error message",
-                },
+                "body": exc.body
             }
         ),
     )
@@ -80,7 +82,7 @@ def custom_generic_exception_handler(request: Request, exc: Exception):
     return generic_exception_handler(request, exc)
 
 
-# root message
+# root api
 @app.get("/")
 async def root():
     return {"message": "FastAPI!"}
@@ -90,5 +92,6 @@ app.include_router(routers.v1.routes.api_router, prefix=settings.API_V1_STR)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8001,
-                reload=True, log_level="info")
+    uvicorn.run(
+        "main:app", host="127.0.0.1", port=8001, reload=True, log_level="info"
+    )
